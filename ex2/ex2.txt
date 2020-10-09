@@ -1,0 +1,27 @@
+Related Question:
+● 4xCores Intel(R) Xeon(R) CPU E7-4830 v4 @ 2.00GHz
+● 64GB of ram
+● 2 tb HDD disk space
+● 2 x 10Gbit/s nics
+The server is used for SSL offloading and proxies around 25000 requests per second.
+Please let us know which metrics are interesting to monitor in that specific case and
+how would you do that? What are the challenges of monitoring this?
+
+
+Answer:
+I am sincerly not in touch with high-performance issues in servers in past recent years.
+I am not able to say if those hardware specs are enough or not for 25k requests per second. 
+
+However, if I had to monitor this I would like to monitor 
+1. The network load in those network interfaces by means of SNMP polling. 
+1a. If it is a hardware server this may be easy to monitor.
+1b. If it is on virtualization/cloud, this is a complicated issue, because usually there are no (hardware) dedicated channels for those (virtual) interfaces. You may have both (virtual) interfaces sharing the same (hardware) dedicated channel for communication, that is as well shared with other tenants, thus it doesn't matter if you have got so called "10Gbit/s nics. 
+
+2. Because cryptography and app thread issues are involved I would also like to monitor the CPU and RAM relating with the threads that are responsible for SSL offloading and proxying communications. NMS solutions are usually not enough for this, and I would pivot in grafana, splunk, new-relic or the like monitoring solutions. 
+
+3. While hard-disks are not so much important in this area of SSL offloading and proxy functions, if by any chance the server uses swap area, or syncs data with the hard-drive, HDD disks can become a bottleneck, and SSD-disks are desirable.
+
+Summary: 
+In this scenario, I think the CPU will become the major bottleneck not only because crypto, but also because the networking stack of Linux-based solutions (by default) is quite shitty without specialised hardware and drivers to share buffers of network interfaces by means of direct memory access for direct access to port interface buffers from CPU. There is a big penalization in copying packets from port (buffer) interfaces to the domain of CPU-RAM. 
+
+Challenges: I think I would need various monitoring platforms in order to monitor all related issues, as well as information of hardware/software platforms I am dealing with. 
